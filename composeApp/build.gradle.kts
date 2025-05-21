@@ -41,15 +41,16 @@ kotlin {
         }
         binaries.executable()
     }
-    
+
     sourceSets {
         val desktopMain by getting
-        
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+            // —— Compose Multiplatform UI ——
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -58,6 +59,20 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            // —— HTTP Client & Serialización (Ktor) ——
+            implementation("io.ktor:ktor-client-core:2.4.0")
+            implementation("io.ktor:ktor-client-content-negotiation:2.4.0")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:2.4.0")
+            // Motores por plataforma:
+            implementation("io.ktor:ktor-client-cio:2.4.0")  // Android/Desktop (JVM)
+            implementation("io.ktor:ktor-client-js:2.4.0")   // Web (JS)
+
+            // —— JSON ——
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+            // —— Carga de imágenes multiplataforma ——
+            implementation("com.madeinussa:kamel-image:0.5.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
