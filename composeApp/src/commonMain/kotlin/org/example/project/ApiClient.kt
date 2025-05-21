@@ -23,14 +23,25 @@ data class PageInfo(
 )
 
 @Serializable
+data class Origin(val name: String, val url: String)
+
+@Serializable
+data class Location(val name: String, val url: String)
+
+@Serializable
 data class Character(
     val id: Int,
     val name: String,
     val status: String,
     val species: String,
+    val type: String,
     val gender: String,
-    val image: String
+    val origin: Origin,
+    val location: Location,
+    val image: String,
+    val episode: List<String>
 )
+
 
 // 1.2. Cliente HTTP
 object ApiClient {
@@ -45,4 +56,10 @@ object ApiClient {
         val response: CharacterResponse = client.get(url).body()
         return response.results
     }
+
+    suspend fun getCharactersByName(name: String, page: Int): List<Character> =
+        client.get("https://rickandmortyapi.com/api/character?name=$name&page=$page").body<CharacterResponse>().results
+
 }
+
+
