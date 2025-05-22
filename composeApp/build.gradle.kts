@@ -3,15 +3,20 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.tasks.bundling.Jar
+
+
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeMultiplatform)   // este ya aplica org.jetbrains.compose v1.8.0
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
 }
+
 repositories {
     google()
     mavenCentral()
@@ -27,7 +32,13 @@ kotlin {
         }
     }
 
-    jvm("desktop")
+    jvm("desktop"){
+        binaries{
+            executable{
+
+            }
+        }
+    }
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
@@ -132,4 +143,25 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+val fatJar by tasks.registering(Jar::class) {
+    group = "package"
+    description = "Genera un fat JAR ejecutable con todas las dependencias."
+
+    // descartar duplicados
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    archiveClassifier.set("all")
+    manifest {
+        attributes["Main-Class"] = "org.example.project.MainKt"
+    }
+
+    from(kotlin.targets["desktop"].compilations["main"].output)
+    dependsOn(configurations["desktopRuntimeClasspath"])
+    from({
+        configurations["desktopRuntimeClasspath"]
+            .filter { it.name.endsWith(".jar") }
+            .map { zipTree(it) }
+    })
 }
